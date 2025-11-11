@@ -36,7 +36,7 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            animation: fadeOut 1s ease-in-out 2s forwards;
+            animation: fadeOut 0.5s ease-in-out 0.7s forwards;
         }
 
         @keyframes fadeOut {
@@ -335,7 +335,7 @@
             min-height: 100vh;
             padding: 20px;
             opacity: 0;
-            animation: fadeIn 1s ease-in-out 2.5s forwards;
+            animation: fadeIn 0.5s ease-in-out 1.2s forwards;
         }
 
         @keyframes fadeIn {
@@ -353,7 +353,7 @@
             max-width: 700px;
             width: 100%;
             transform: translateY(30px);
-            animation: slideUp 1s ease-out 2.5s forwards;
+            animation: slideUp 1s ease-out 0.8s forwards;
         }
 
         @keyframes slideUp {
@@ -1386,7 +1386,7 @@ function updateScheduleStatus() {
                 element.innerHTML = text.substring(0, index + 1) + '<span class="cursor"></span>';
                 setTimeout(function() {
                     typeWriter(element, text, index + 1, callback);
-                }, 30);
+                }, 55);
             } else {
                 element.innerHTML = text;
                 if (callback) {
@@ -1401,7 +1401,7 @@ function updateScheduleStatus() {
                     typeWriter(document.getElementById('description'), texts.description, 0);
                 });
             });
-        }, 3000);
+        }, 2000);
 
         var observerOptions = {
             threshold: 0.2
