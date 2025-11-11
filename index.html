@@ -136,9 +136,6 @@
         }
 
         .current-status {
-            position: absolute;
-            top: 20px;
-            left: 20px;
             background: rgba(138, 43, 226, 0.9);
             border-radius: 15px;
             padding: 20px 30px;
@@ -146,6 +143,7 @@
             box-shadow: 0 8px 30px rgba(138, 43, 226, 0.5);
             min-width: 280px;
             animation: statusPulse 2s ease-in-out infinite;
+            margin-bottom: 20px;
         }
 
         @keyframes statusPulse {
@@ -166,7 +164,45 @@
             font-size: 1.3rem;
             color: #ffffff;
             font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 2p
+        }
+
+        .time-remaining {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 600;
+        }
+
+        .time-remaining.warning {
+            color: #ff6b6b;
+            animation: warningBlink 1s ease-in-out infinite;
+        }
+
+        @keyframes warningBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .current-class.transitioning {
+            animation: slideTransition 1.5s ease-in-out;
+        }
+
+        @keyframes slideTransition {
+            0% {
+                transform: translateX(-20px) scale(1.05);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translateX(10px) scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateX(0) scale(1.05);
+                opacity: 1;
+            }
         }
 
         .close-btn {
@@ -244,12 +280,30 @@
             vertical-align: middle;
         }
 
-        .current-class {
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.4) 0%, rgba(218, 112, 214, 0.4) 100%) !important;
-            border: 2px solid #da70d6 !important;
+        .schedule-table {
+            position: relative;
+        }
+
+        .highlight-overlay {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.5) 0%, rgba(218, 112, 214, 0.5) 100%);
+            border: 2px solid #da70d6;
             box-shadow: 0 0 30px rgba(138, 43, 226, 0.6), inset 0 0 20px rgba(218, 112, 214, 0.3);
             animation: highlightPulse 2s ease-in-out infinite;
-            transform: scale(1.05);
+            pointer-events: none;
+            z-index: 100;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 4px;
+        }
+
+        .current-class .subject-name {
+            position: relative;
+            z-index: 101;
+        }
+
+        .current-class .teacher-room {
+            position: relative;
+            z-index: 101;
         }
 
         @keyframes highlightPulse {
@@ -437,12 +491,11 @@
             line-height: 1.6;
         }
 
-        .task-item:before {
-            content: "\25B9";
-            position: absolute;
-            left: 0;
-            color: #8a2be2;
-            font-size: 1.5rem;
+        .task-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            margin-left: 8px;
         }
 
         .no-tasks {
@@ -453,10 +506,12 @@
             padding: 20px 0;
         }
     
-dia (max-width: 768px) 
+
+@media (max-width: 768px) {
     .profile-card {
         padding: 40px 30px;
     }
+}
     .info-line {
         font-size: 1.3rem;
     }
@@ -529,9 +584,13 @@ dia (max-width: 768px)
         line-height: 1.3;
     }
     .current-status {
-        position: static;
-        margin: 0 auto 20px;
-        width: calc(100% - 20px);
+        position: fixed;
+        bottom: 20px;
+        left: 10px;
+        right: auto;
+        margin: 0;
+        width: auto;
+        max-width: calc(100% - 20px);
         padding: 15px 20px;
         min-width: auto;
     }
@@ -786,7 +845,11 @@ dia (max-width: 768px)
         font-size: 0.6rem;
     }
     .current-status {
+        position: fixed;
+        bottom: 15px;
+        left: 8px;
         padding: 12px 15px;
+        max-width: calc(100% - 16px);
     }
     .status-label {
         font-size: 0.75rem;
@@ -843,15 +906,20 @@ dia (max-width: 768px)
     <div class="schedule-modal" id="scheduleModal">
         <div class="schedule-content">
             <button class="close-btn" onclick="toggleSchedule()">×</button>
-            <div class="current-status" id="currentStatus">
-                <div class="status-label">สถานะปัจจุบัน</div>
+            
+                <div class="current-status" id="currentStatus">
+                <div class="status-label">เวลาปัจจุบัน: <span id="currentTime">--:--</span></div>
                 <div class="status-content" id="statusText">กำลังโหลด...</div>
+                <div class="time-remaining" id="timeRemaining" style="display: none;">หมดคาบเวลา: <span id="endTime">--:--</span></div>
             </div>
+            
             <div class="schedule-header">
                 <h2>ตารางเรียน</h2>
                 <p>ชั้น ม.4/2 | ห้องประจำ 422 | ภาคเรียนที่ 2/2568</p>
             </div>
-            <table class="schedule-table" id="scheduleTable">
+                <div style="position: relative;">
+                <div class="highlight-overlay" id="highlightOverlay" style="display: none;"></div>
+                <table class="schedule-table" id="scheduleTable">
                 <thead>
                     <tr>
                         <th>คาบที่<br>เวลา</th>
@@ -882,7 +950,7 @@ dia (max-width: 768px)
                     <tr>
                         <td class="period-col">อ.</td>
                         <td class="empty-cell" data-day="2" data-period="0">ว่าง</td>
-                        <td class="empty-cell" data-day="2" data-period="1">ต้านทุจริต<br>ศึกษา</td>
+                        <td data-day="2" data-period="1"><div class="subject-name">ต้านทุจริตศึกษา</div><div class="teacher-room">-<br>-</div></td>
                         <td data-day="2" data-period="2"><div class="subject-name">ชีววิทยา</div><div class="teacher-room">ครูกฤตน<br>422</div></td>
                         <td data-day="2" data-period="3"><div class="subject-name">ชีววิทยา</div><div class="teacher-room">ครูกฤตน<br>422</div></td>
                         <td data-day="2" data-period="4"><div class="subject-name">คณิตศาสตร์</div><div class="teacher-room">ครูดวงสมร<br>325</div></td>
@@ -904,17 +972,17 @@ dia (max-width: 768px)
                         <td data-day="3" data-period="8"><div class="subject-name">เคมี</div><div class="teacher-room">ครูเฉลียว<br>422</div></td>
                     </tr>
 <tr>
-                        <td class="period-col">พ.</td>
-                        <td class="empty-cell" data-day="4" data-period="0">ว่าง</td>
-                        <td data-day="4" data-period="1"><div class="subject-name">คณิตศาสตร์</div><div class="teacher-room">ครูดวงสมร<br>325</div></td>
-                        <td data-day="4" data-period="2"><div class="subject-name">ไทย</div><div class="teacher-room">ครูมลศรี<br>422</div></td>
-                        <td data-day="4" data-period="3"><div class="subject-name">อังกฤษ 2</div><div class="teacher-room">ครูNiall<br>238</div></td>
-                        <td data-day="4" data-period="4"><div class="subject-name">จีน</div><div class="teacher-room">ครูณรงค์<br>422</div></td>
-                        <td class="empty-cell" data-day="4" data-period="5">พักเที่ยง<br>ม.ปลาย</td>
-                        <td data-day="4" data-period="6"><div class="subject-name">การงาน</div><div class="teacher-room">ครูสุมาลี<br>คหกรรม</div></td>
-                        <td data-day="4" data-period="7"><div class="subject-name">ชีววิทยา</div><div class="teacher-room">ครูกฤตนัย<br>422</div></td>
-                        <td data-day="4" data-period="8"><div class="subject-name">กิจกรรมชุมนุม</div><div class="teacher-room">-<br>-</div></td>
-                    </tr>
+    <td class="period-col">พ.</td>
+    <td class="empty-cell" data-day="4" data-period="0">ว่าง</td>
+    <td data-day="4" data-period="1"><div class="subject-name">ทัศนศึกษา</div><div class="teacher-room">-<br>-</div></td>
+    <td data-day="4" data-period="2"><div class="subject-name">ทัศนศึกษา</div><div class="teacher-room">-<br>-</div></td>
+    <td data-day="4" data-period="3"><div class="subject-name">ทัศนศึกษา</div><div class="teacher-room">-<br>-</div></td>
+    <td data-day="4" data-period="4"><div class="subject-name">ทัศนศึกษา</div><div class="teacher-room">-<br>-</div></td>
+    <td data-day="4" data-period="5"><div class="subject-name">ทัศนศึกษา</div><div class="teacher-room">-<br>-</div></td>
+    <td data-day="4" data-period="6"><div class="subject-name">ทัศนศึกษา</div><div class="teacher-room">-<br>-</div></td>
+    <td data-day="4" data-period="7"><div class="subject-name">ทัศนศึกษา</div><div class="teacher-room">-<br>-</div></td>
+    <td data-day="4" data-period="8"><div class="subject-name">ทัศนศึกษา</div><div class="teacher-room">-<br>-</div></td>
+</tr>
                     <tr>
                         <td class="period-col">ศ.</td>
                         <td class="empty-cell" data-day="5" data-period="0">ว่าง</td>
@@ -928,7 +996,7 @@ dia (max-width: 768px)
                         <td data-day="5" data-period="8"><div class="subject-name">แนะแนว</div><div class="teacher-room">ครูณัฐธมน<br>422</div></td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
     
@@ -951,15 +1019,26 @@ dia (max-width: 768px)
     <div class="scroll-container">
         <h1 class="title-header" style="text-align: center; margin-bottom: 50px; font-size: 3.5rem;">My Homework/Work</h1>
         <div class="homework-section" id="homeworkSection">
-            <div class="homework-card">
+<div class="homework-card">
                 <h2 class="subject-title">คณิตศาสตร์</h2>
-                <div class="task-item">ปริ้นเอกสาร 90 หน้า</div>
-                <div class="task-item">งานที่ 1 - 1 หัวข้อใหญ่ แสดงวิธีทำข้อ 2 | 2 หัวข้อใหญ่ทำทุกข้อ</div>
+                <div class="task-item">✅ ปริ้นเอกสาร 90 หน้า <span class="task-date">28/10/2567</span></div>
+                <div class="task-item">✅ งานที่ 1 - 1 หัวข้อใหญ่ แสดงวิธีทำข้อ 2 | 2 หัวข้อใหญ่ทำทุกข้อ <span class="task-date">10/11/2567</span></div>
             </div>
 
             <div class="homework-card">
                 <h2 class="subject-title">ฟิสิกส์</h2>
-                <div class="no-tasks">ยังไม่มีงาน</div>
+                <div class="task-item">✅ กฎการเคลื่อนที่ของนิวตัน จดตามสไลด์และตอบ <span class="task-date">10/11/2567</span></div>
+                <div class="task-item">✅ แรง มวล และกฎการเคลื่อนที่ จดตามสไลด์และตอบ <span class="task-date">11/11/2567</span></div>
+            </div>
+
+            <div class="homework-card">
+                <h2 class="subject-title">ชีววิทยา</h2>
+                <div class="task-item">✅ เรื่องโครโมโซมและสารพันธุกรรม ข้อ 1 <span class="task-date">11/11/2567</span></div>
+            </div>
+
+            <div class="homework-card">
+                <h2 class="subject-title">อังกฤษ</h2>
+                <div class="task-item">✅ ตั้งชื่อเรื่อง (เป็นอังกฤษ) และแปลเนื้อเรื่องที่กำหนด - แปลคำศัพท์ 5 คำ <span class="task-date">11/11/2567</span></div>
             </div>
 
             <div class="homework-card">
@@ -974,11 +1053,6 @@ dia (max-width: 768px)
 
             <div class="homework-card">
                 <h2 class="subject-title">IS</h2>
-                <div class="no-tasks">ยังไม่มีงาน</div>
-            </div>
-
-            <div class="homework-card">
-                <h2 class="subject-title">อังกฤษ</h2>
                 <div class="no-tasks">ยังไม่มีงาน</div>
             </div>
 
@@ -1024,8 +1098,28 @@ dia (max-width: 768px)
                 7: { subject: 'เคมี', teacher: 'ครูเฉลียว', room: '422' },
                 8: { subject: 'เคมี', teacher: 'ครูเฉลียว', room: '422' }
             },
-            4: {},
-            5: {}
+            4: {
+                 0: null,
+                 1: { subject: 'ทัศนศึกษา', teacher: '-', room: '-' },
+                 2: { subject: 'ทัศนศึกษา', teacher: '-', room: '-' },
+                 3: { subject: 'ทัศนศึกษา', teacher: '-', room: '-' },
+                 4: { subject: 'ทัศนศึกษา', teacher: '-', room: '-' },
+                 5: { subject: 'ทัศนศึกษา', teacher: '-', room: '-' },
+                 6: { subject: 'ทัศนศึกษา', teacher: '-', room: '-' },
+                 7: { subject: 'ทัศนศึกษา', teacher: '-', room: '-' },
+                 8: { subject: 'ทัศนศึกษา', teacher: '-', room: '-' }
+            },
+             5: {
+                 0: null,
+                 1: { subject: 'วิทยาศาสตร์', teacher: 'ครูวิรงรอง', room: '422' },
+                 2: { subject: 'นาฏศิลป์', teacher: 'ครูวชิรวิชญ์', room: 'นาฏศิลป์' },
+                 3: { subject: 'สังคม', teacher: 'ครูศิลายุ', room: '324' },
+                 4: { subject: 'อังกฤษ', teacher: 'ครูดลฤดี', room: '422' },
+                 5: null,
+                 6: { subject: 'คอมพิวเตอร์', teacher: 'ครูศรัญยา', room: 'ICT4' },
+                 7: { subject: 'คณิตศาสตร์', teacher: 'ครูดวงสมร', room: '325' },
+                 8: { subject: 'แนะแนว', teacher: 'ครูณัฐธมน', room: '422' }
+           }
         };
 
         var periodTimes = [
@@ -1049,34 +1143,24 @@ dia (max-width: 768px)
             var now = new Date();
             var day = now.getDay();
             var currentMinutes = now.getHours() * 60 + now.getMinutes();
+            var currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
             if (day === 0 || day === 6) {
-                return { text: 'วันหยุด', day: null, period: null };
+                return { text: 'วันหยุด', day: null, period: null, timeRemaining: null, currentTime: currentTime };
             }
 
             if (currentMinutes < timeToMinutes('06:00')) {
-                return { text: 'ก่อนเวลาเรียน', day: null, period: null };
+                return { text: 'ก่อนเวลาเรียน', day: null, period: null, timeRemaining: null, currentTime: currentTime };
             }
 
             if (currentMinutes >= timeToMinutes('06:00') && currentMinutes < timeToMinutes('07:50')) {
-                return { text: 'รอเข้าแถวเคารพธงชาติ', day: null, period: null };
+                var minutesUntil = timeToMinutes('07:50') - currentMinutes;
+                return { text: 'รอเข้าแถวเคารพธงชาติ', day: null, period: null, timeRemaining: 'อีก ' + minutesUntil + ' นาที', currentTime: currentTime };
             }
 
             if (currentMinutes >= timeToMinutes('07:50') && currentMinutes < timeToMinutes('08:00')) {
-                return { text: 'เข้าแถวเคารพธงชาติ', day: null, period: null };
-            }
-
-            if (currentMinutes >= timeToMinutes('08:00') && currentMinutes < timeToMinutes('08:40')) {
-                var classInfo = scheduleData[day] && scheduleData[day][0];
-                if (classInfo) {
-                    return { 
-                        text: 'เรียน ' + classInfo.subject + ' | ' + classInfo.teacher + ' | ' + classInfo.room,
-                        day: day,
-                        period: 0
-                    };
-                } else {
-                    return { text: 'รอคาบที่ 1', day: null, period: null };
-                }
+                var minutesUntil = timeToMinutes('08:00') - currentMinutes;
+                return { text: 'เข้าแถวเคารพธงชาติ', day: null, period: null, timeRemaining: 'อีก ' + minutesUntil + ' นาที', currentTime: currentTime };
             }
 
             for (var i = 0; i < periodTimes.length; i++) {
@@ -1086,14 +1170,28 @@ dia (max-width: 768px)
 
                 if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
                     var classInfo = scheduleData[day] && scheduleData[day][i];
+                    var minutesLeft = endMinutes - currentMinutes;
+                    var timeRemainingText = 'เหลือเวลาอีก ' + minutesLeft + ' นาที';
+                    var isWarning = minutesLeft <= 10;
+                    
                     if (classInfo) {
                         return { 
                             text: 'เรียน ' + classInfo.subject + ' | ' + classInfo.teacher + ' | ' + classInfo.room,
                             day: day,
-                            period: i
+                            period: i,
+                            timeRemaining: timeRemainingText,
+                            isWarning: isWarning,
+                            currentTime: currentTime
                         };
                     } else {
-                        return { text: 'พักเบรก', day: null, period: null };
+                        return { 
+                            text: 'พักเบรก', 
+                            day: null, 
+                            period: null, 
+                            timeRemaining: timeRemainingText,
+                            isWarning: false,
+                            currentTime: currentTime
+                        };
                     }
                 }
 
@@ -1101,25 +1199,57 @@ dia (max-width: 768px)
                     var nextPeriod = periodTimes[i + 1];
                     var nextStartMinutes = timeToMinutes(nextPeriod.start);
                     if (currentMinutes >= endMinutes && currentMinutes < nextStartMinutes) {
-                        return { text: 'รอคาบที่ ' + (i + 1), day: null, period: null };
+                        var minutesUntil = nextStartMinutes - currentMinutes;
+                        return { 
+                            text: 'รอคาบที่ ' + (i + 1), 
+                            day: null, 
+                            period: null, 
+                            timeRemaining: 'อีก ' + minutesUntil + ' นาที',
+                            isWarning: false,
+                            currentTime: currentTime
+                        };
                     }
                 }
             }
 
             if (currentMinutes >= timeToMinutes('16:00')) {
-                return { text: 'เลิกเรียน', day: null, period: null };
+                return { text: 'เลิกเรียน', day: null, period: null, timeRemaining: null, currentTime: currentTime };
             }
 
-            return { text: 'พักเบรก', day: null, period: null };
+            return { text: 'พักเบรก', day: null, period: null, timeRemaining: null, currentTime: currentTime };
         }
 
-        function updateScheduleStatus() {
+        var lastPeriod = null;
+
+function updateScheduleStatus() {
             var status = getCurrentStatus();
+            
+            var currentTimeEl = document.getElementById('currentTime');
+            if (currentTimeEl) {
+                currentTimeEl.textContent = status.currentTime;
+            }
+            
             var statusText = document.getElementById('statusText');
             if (statusText) {
                 statusText.textContent = status.text;
             }
 
+            var timeRemainingEl = document.getElementById('timeRemaining');
+            if (timeRemainingEl) {
+                if (status.timeRemaining) {
+                    timeRemainingEl.textContent = status.timeRemaining;
+                    timeRemainingEl.style.display = 'block';
+                    if (status.isWarning) {
+                        timeRemainingEl.classList.add('warning');
+                    } else {
+                        timeRemainingEl.classList.remove('warning');
+                    }
+                } else {
+                    timeRemainingEl.style.display = 'none';
+                }
+            }
+
+            var overlay = document.getElementById('highlightOverlay');
             var allCells = document.querySelectorAll('.schedule-table td[data-day]');
             allCells.forEach(function(cell) {
                 cell.classList.remove('current-class');
@@ -1127,9 +1257,22 @@ dia (max-width: 768px)
 
             if (status.day !== null && status.period !== null) {
                 var currentCell = document.querySelector('.schedule-table td[data-day="' + status.day + '"][data-period="' + status.period + '"]');
-                if (currentCell) {
+                if (currentCell && overlay) {
                     currentCell.classList.add('current-class');
+                    
+                    var rect = currentCell.getBoundingClientRect();
+                    var tableRect = currentCell.closest('table').getBoundingClientRect();
+                    
+                    overlay.style.display = 'block';
+                    overlay.style.left = (rect.left - tableRect.left) + 'px';
+                    overlay.style.top = (rect.top - tableRect.top) + 'px';
+                    overlay.style.width = rect.width + 'px';
+                    overlay.style.height = rect.height + 'px';
+                    
+                    lastPeriod = status.day + '-' + status.period;
                 }
+            } else {
+                if (overlay) overlay.style.display = 'none';
             }
         }
 
@@ -1233,7 +1376,7 @@ dia (max-width: 768px)
         animate();
 
         var texts = {
-            name: 'Dino',
+            name: 'Tape',
             age: '16',
             description: 'I\'m just a guy who really loves his girlfriend and enjoys coding'
         };
